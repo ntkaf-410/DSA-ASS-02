@@ -207,6 +207,34 @@ function markDelivered(string orderId) returns boolean|error {
     return done;
 }
 
+// The order was cancelled upstream. Only possible while the food hasn't left the restaurant.
+// If a driver was already on the way they are released in the same transaction.
+function cancelDelivery(string orderId) returns boolean|error {
+    boolean done = false;
+    transaction {
+        // free the driver first, while the delivery row still says ASSIGNED
+        _ = check dbClient->execute(`
+            UPDATE drivers d JOIN deliveries x ON x.driver_id = d.id
+            SET d.status = 'AVAILABLE'
+            WHERE x.order_id = ${orderId} AND x.status = 'ASSIGNED' AND d.status = 'BUSY'`);
+        sql:ExecutionResult res = check dbClient->execute(`
+            UPDATE deliveries SET status = 'CANCELLED'
+            WHERE order_id = ${orderId} AND status IN ('PENDING', 'AWAITING_DRIVER', 'ASSIGNED')`);
+        if res.affectedRowCount == 1 {
+            _ = check dbClient->execute(`
+                INSERT INTO delivery_events (order_id, status, note)
+                VALUES (${orderId}, 'CANCELLED', 'Order was cancelled')`);
+            check commit;
+            done = true;
+        } else {
+            rollback;
+        }
+    } on fail error e {
+        return e;
+    }
+    return done;
+}
+
 // driver location
 
 // Only the latest position is kept, that's all the tracking screen needs
