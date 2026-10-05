@@ -1,0 +1,20 @@
+# Copy to Config.toml for local runs (git-ignored).
+# In Docker use env vars instead, e.g. BAL_CONFIG_VAR_DBHOST=mysql
+
+servicePort = 8082
+
+dbHost = "localhost"
+dbPort = 3306
+dbUser = "root"
+dbPassword = "root"
+dbName = "restaurant_db"
+
+kafkaBootstrap = "localhost:9092"
+consumerGroupId = "restaurant-service-group"
+orderCreatedTopic = "orders.created"
+orderStatusTopic = "orders.status.changed"
+restaurantOrderTopic = "restaurants.order.status"
+lowStockTopic = "restaurants.stock.low"
+
+lowStockThreshold = 5
+utcOffsetSeconds = 7200
