@@ -1,0 +1,9 @@
+port = 8083
+dbHost = "localhost"
+dbPort = 3308
+dbUser = "root"
+dbPassword = "root"
+dbName = "order_db"
+kafkaBootstrap = "localhost:9092"
+customerServiceUrl = "http://localhost:8081"
+restaurantServiceUrl = "http://localhost:8082"
