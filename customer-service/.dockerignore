@@ -1,0 +1,5 @@
+target/
+Config.toml
+.git
+docs/
+tests/
