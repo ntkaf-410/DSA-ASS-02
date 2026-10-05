@@ -108,12 +108,11 @@ Needs Ballerina 2201.10.x and Docker.
 docker compose -f docker-compose.dev.yml up -d mysql kafka
 ./scripts/create-topics.sh
 
-cp Config.toml.example Config.toml
-bal run                       # http://localhost:8082
-# MySQL is on host port 3307 in the dev compose. Set dbPort = 3307 in Config.toml for local runs.
+cp Config.toml
+bal run                     
 
-./scripts/seed-demo.sh        # restaurant 1 + hours + 3 menu items
-bal test                      # needs the DB up
+./scripts/seed-demo.sh        // restaurant 1 + hours + 3 menu items
+bal test                      // needs the DB up
 ```
 
 Or all in containers: `docker compose -f docker-compose.dev.yml up -d --build`.
