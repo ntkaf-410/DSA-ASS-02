@@ -13,7 +13,7 @@ kafkaBootstrap = "localhost:9092"
 consumerGroupId = "restaurant-service-group"
 orderCreatedTopic = "orders.created"
 orderStatusTopic = "orders.status.changed"
-restaurantOrderTopic = "restaurants.order.status"
+restaurntOrderTopic = "restaurants.order.status"
 lowStockTopic = "restaurants.stock.low"
 
 lowStockThreshold = 5

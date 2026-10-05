@@ -42,7 +42,7 @@ service /restaurants on httpListener {
         };
     }
 
-    # Active restaurants only. Optional ?city= and ?cuisine= filters.
+    // Active restaurants only. Optional ?city= and ?cuisine= filters.
     resource function get .(string? city, string? cuisine, int page = 1, int pageSize = 20)
             returns Restaurant[]|http:BadRequest|http:InternalServerError {
         string? invalid = validatePaging(page, pageSize);
