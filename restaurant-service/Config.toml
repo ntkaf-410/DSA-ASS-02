@@ -4,7 +4,7 @@
 servicePort = 8082
 
 dbHost = "localhost"
-dbPort = 3306
+dbPort = 3307
 dbUser = "root"
 dbPassword = "root"
 dbName = "restaurant_db"

@@ -117,7 +117,7 @@ type OrderRequest record {|
 |};
 
 // Kafka events we produce
-# Goes to `restaurants.order.status`. status = CONFIRMED | REJECTED | PREPARING | READY
+// Goes to `restaurants.order.status`. status = CONFIRMED | REJECTED | PREPARING | READY
 public type RestaurantOrderEvent record {|
     string eventType;
     string orderId;
@@ -127,7 +127,7 @@ public type RestaurantOrderEvent record {|
     string occurredAt;
 |};
 
-# Goes to `restaurants.stock.low`
+// Goes to `restaurants.stock.low`
 public type LowStockEvent record {|
     string eventType;
     int restaurantId;

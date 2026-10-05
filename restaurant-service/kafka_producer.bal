@@ -12,8 +12,8 @@ final kafka:Producer kafkaProducer = check new (kafkaBootstrap, {
     retryCount: 3
 });
 
-# Tells the Order Service what the kitchen decided (CONFIRMED, REJECTED, PREPARING, READY).
-# Best effort: a Kafka outage is logged, it never fails the HTTP call or the consumer loop.
+// Tells the Order Service what the kitchen decided (CONFIRMED, REJECTED, PREPARING, READY).
+// Best effort: a Kafka outage is logged, it never fails the HTTP call or the consumer loop.
 function publishOrderStatus(string orderId, int restaurantId, string status, string? reason = ()) {
     RestaurantOrderEvent evt = {
         eventType: "RESTAURANT_ORDER_" + status,
@@ -35,7 +35,7 @@ function publishOrderStatus(string orderId, int restaurantId, string status, str
     }
 }
 
-# For the Notification Service: an item is running low (or sold out).
+// For the Notification Service: an item is running low (or sold out).
 function publishLowStock(MenuItem item) {
     LowStockEvent evt = {
         eventType: "STOCK_LOW",

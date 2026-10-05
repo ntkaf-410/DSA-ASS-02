@@ -64,7 +64,7 @@ function deleteRestaurant(int id) returns int|error {
 
 // opening hours
 
-# Replaces the whole week in one transaction so a half-saved schedule can't exist.
+// Replaces the whole week in one transaction so a half-saved schedule can't exist.
 function replaceOpeningHours(int restaurantId, OpeningHoursInput[] hours) returns error? {
     transaction {
         _ = check dbClient->execute(`DELETE FROM opening_hours WHERE restaurant_id = ${restaurantId}`);
@@ -118,7 +118,7 @@ function getMenuItem(int restaurantId, int itemId) returns MenuItem|sql:Error {
         ` WHERE id = ${itemId} AND restaurant_id = ${restaurantId}`));
 }
 
-# onlyAvailable hides items that are switched off or sold out.
+// onlyAvailable hides items that are switched off or sold out.
 function listMenu(int restaurantId, string? category, boolean onlyAvailable) returns MenuItem[]|error {
     sql:ParameterizedQuery q = sql:queryConcat(menuSelect(), ` WHERE restaurant_id = ${restaurantId}`);
     if category is string {
@@ -206,7 +206,7 @@ function listKitchenOrders(int restaurantId, string? status, int pageSize, int o
     return result;
 }
 
-# Moves an order one step forward. The WHERE on the old status stops two clicks racing.
+// Moves an order one step forward. The WHERE on the old status stops two clicks racing.
 function advanceOrder(int restaurantId, string orderId, string fromStatus, string toStatus) returns int|error {
     sql:ExecutionResult res = check dbClient->execute(`
         UPDATE kitchen_orders SET status = ${toStatus}
@@ -214,8 +214,8 @@ function advanceOrder(int restaurantId, string orderId, string fromStatus, strin
     return res.affectedRowCount ?: 0;
 }
 
-# Takes the stock for every line and records the order as CONFIRMED, all or nothing.
-# Returns () on success or the reason when something is out of stock.
+// Takes the stock for every line and records the order as CONFIRMED, all or nothing.
+// Returns () on success or the reason when something is out of stock.
 function acceptOrder(OrderRequest req) returns string?|error {
     string? failure = ();
     transaction {
@@ -258,30 +258,35 @@ function saveRejectedOrder(OrderRequest req, string reason) returns error? {
                 ${req.lines.toJsonString()})`);
 }
 
-# Gives the reserved stock back and marks the order CANCELLED.
-# Returns false when there was nothing to cancel (unknown order, or already cancelled/rejected).
+// Gives the reserved stock back and marks the order CANCELLED.
+// Returns false when there was nothing to cancel (unknown order, or already cancelled/rejected).
 function cancelOrderAndRestock(string orderId) returns boolean|error {
+    boolean restocked = false;
+    error? lookupFailure = ();
     transaction {
         // FOR UPDATE locks the row so a double cancel can't restock twice
         string|sql:Error current = dbClient->queryRow(
             `SELECT status FROM kitchen_orders WHERE order_id = ${orderId} FOR UPDATE`);
-        if current is sql:NoRowsError {
+        if current is string && current != "CANCELLED" && current != "REJECTED" {
+            _ = check dbClient->execute(`
+                UPDATE menu_items m
+                JOIN stock_reservations r ON r.menu_item_id = m.id
+                SET m.stock_quantity = m.stock_quantity + r.quantity
+                WHERE r.order_id = ${orderId}`);
+            _ = check dbClient->execute(
+                `UPDATE kitchen_orders SET status = 'CANCELLED' WHERE order_id = ${orderId}`);
+            restocked = true;
+            check commit;
+        } else {
             rollback;
-            return false;
+            // no row is fine (unknown order), any other DB error is not
+            if current is sql:Error && current !is sql:NoRowsError {
+                lookupFailure = current;
+            }
         }
-        string status = check current;
-        if status == "CANCELLED" || status == "REJECTED" {
-            rollback;
-            return false;
-        }
-        _ = check dbClient->execute(`
-            UPDATE menu_items m
-            JOIN stock_reservations r ON r.menu_item_id = m.id
-            SET m.stock_quantity = m.stock_quantity + r.quantity
-            WHERE r.order_id = ${orderId}`);
-        _ = check dbClient->execute(
-            `UPDATE kitchen_orders SET status = 'CANCELLED' WHERE order_id = ${orderId}`);
-        check commit;
     }
-    return true;
+    if lookupFailure is error {
+        return lookupFailure;
+    }
+    return restocked;
 }

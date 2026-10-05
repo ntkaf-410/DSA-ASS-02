@@ -80,7 +80,7 @@ function rejectOrder(OrderRequest req, string reason) returns error? {
     publishOrderStatus(req.orderId, req.restaurantId, "REJECTED", reason);
 }
 
-# After taking stock, tell Notification about any item that is now low.
+// After taking stock, tell Notification about any item that is now low.
 function warnIfLowStock(OrderRequest req) {
     foreach OrderLine line in req.lines {
         MenuItem|sql:Error item = getMenuItem(req.restaurantId, line.menuItemId);

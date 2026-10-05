@@ -104,7 +104,7 @@ function validatePaging(int page, int pageSize) returns string? {
 
 // Opening hours logic
 
-# "08:30" -> 510. Returns -1 if the string is not a time.
+// "08:30" -> 510. Returns -1 if the string is not a time.
 function toMinutes(string t) returns int {
     string[] parts = regexp:split(re `:`, t.trim());
     if parts.length() != 2 {
@@ -118,7 +118,7 @@ function toMinutes(string t) returns int {
     return -1;
 }
 
-# Is the restaurant open at this weekday/minute? (kept pure so it's easy to test)
+// Is the restaurant open at this weekday/minute? (kept pure so it's easy to test)
 function isOpenAt(OpeningHours[] hours, int dayOfWeek, int minuteOfDay) returns boolean {
     foreach OpeningHours h in hours {
         if h.dayOfWeek != dayOfWeek {
@@ -146,7 +146,7 @@ function isOpenAt(OpeningHours[] hours, int dayOfWeek, int minuteOfDay) returns 
     return false;
 }
 
-# Local weekday (0 = Sunday) and minute of day, using the configured UTC offset.
+// Local weekday (0 = Sunday) and minute of day, using the configured UTC offset.
 function localDayAndMinute() returns [int, int] {
     int local = time:utcNow()[0] + utcOffsetSeconds;
     int days = local / 86400;
@@ -154,7 +154,7 @@ function localDayAndMinute() returns [int, int] {
     return [(days + 4) % 7, (local % 86400) / 60];
 }
 
-# A restaurant with no hours configured is treated as always open.
+// A restaurant with no hours configured is treated as always open.
 function isOpenNow(OpeningHours[] hours) returns boolean {
     if hours.length() == 0 {
         return true;
@@ -181,7 +181,7 @@ function toInt(json v) returns int|error {
     return error("expected a number but got " + v.toString());
 }
 
-# Reads an orders.created payload. Lines for the same menu item are merged.
+// Reads an orders.created payload. Lines for the same menu item are merged.
 function parseOrderCreated(json payload) returns OrderRequest|error {
     json orderIdJson = check payload.orderId;
     string orderId = orderIdJson.toString();
@@ -227,7 +227,7 @@ function parseOrderCreated(json payload) returns OrderRequest|error {
 }
 
 // DB error helper
-# MySQL error 1062 = duplicate entry on a UNIQUE key
+// MySQL error 1062 = duplicate entry on a UNIQUE key
 function isDuplicateKey(error e) returns boolean {
     return e is sql:DatabaseError && e.detail().errorCode == 1062;
 }

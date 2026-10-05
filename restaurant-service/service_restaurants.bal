@@ -105,7 +105,7 @@ service /restaurants on httpListener {
         return http:NO_CONTENT;
     }
 
-    # Quick check the Order Service can call before it creates an order.
+    // Quick check the Order Service can call before it creates an order.
     resource function get [int id]/status()
             returns RestaurantStatus|http:NotFound|http:InternalServerError {
         Restaurant|sql:Error r = getRestaurant(id);
@@ -132,7 +132,7 @@ service /restaurants on httpListener {
 
     // opening hours
 
-    # Replaces the whole weekly schedule.
+    // Replaces the whole weekly schedule.
     resource function put [int id]/hours(@http:Payload OpeningHoursInput[] payload)
             returns OpeningHours[]|http:BadRequest|http:NotFound|http:InternalServerError {
         http:NotFound|http:InternalServerError? guard = ensureRestaurant(id);
@@ -199,7 +199,7 @@ service /restaurants on httpListener {
         };
     }
 
-    # ?category= filters by category, ?available=true hides switched-off and sold-out items.
+    // ?category= filters by category, ?available=true hides switched-off and sold-out items.
     resource function get [int id]/menu(string? category, boolean available = false)
             returns MenuItem[]|http:NotFound|http:InternalServerError {
         http:NotFound|http:InternalServerError? guard = ensureRestaurant(id);
@@ -251,7 +251,7 @@ service /restaurants on httpListener {
         return internalError();
     }
 
-    # Sets the stock to an exact number (e.g. after a delivery of ingredients).
+    // Sets the stock to an exact number (e.g. after a delivery of ingredients).
     resource function put [int id]/menu/[int itemId]/stock(@http:Payload StockUpdate payload)
             returns MenuItem|http:BadRequest|http:NotFound|http:InternalServerError {
         if payload.stockQuantity < 0 {
@@ -287,7 +287,7 @@ service /restaurants on httpListener {
 
     // kitchen orders
 
-    # Orders that reached this restaurant, newest first. Optional ?status=
+    // Orders that reached this restaurant, newest first. Optional ?status=
     resource function get [int id]/orders(string? status, int page = 1, int pageSize = 20)
             returns KitchenOrder[]|http:BadRequest|http:NotFound|http:InternalServerError {
         string? invalid = validatePaging(page, pageSize);
@@ -320,8 +320,8 @@ service /restaurants on httpListener {
         return internalError();
     }
 
-    # Kitchen moves an order forward: CONFIRMED -> PREPARING -> READY.
-    # Publishes the change so the Order Service can update its state machine.
+    // Kitchen moves an order forward: CONFIRMED -> PREPARING -> READY.
+    // Publishes the change so the Order Service can update its state machine.
     resource function put [int id]/orders/[string orderId]/status(@http:Payload StatusUpdate payload)
             returns KitchenOrder|http:BadRequest|http:NotFound|http:Conflict|http:InternalServerError {
         string target = payload.status.trim().toUpperAscii();
@@ -356,7 +356,7 @@ service /restaurants on httpListener {
     }
 }
 
-# Liveness probe used by the Docker healthcheck.
+// Liveness probe used by the Docker healthcheck.
 service /health on httpListener {
     resource function get .() returns json|http:ServiceUnavailable {
         int|error ping = dbClient->queryRow(`SELECT 1`);
@@ -367,7 +367,7 @@ service /health on httpListener {
     }
 }
 
-# () when the restaurant exists, otherwise a ready-made error response.
+// () when the restaurant exists, otherwise a ready-made error response.
 function ensureRestaurant(int id) returns http:NotFound|http:InternalServerError? {
     boolean|error exists = restaurantExists(id);
     if exists is error {
