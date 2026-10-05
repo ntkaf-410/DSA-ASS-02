@@ -1,0 +1,18 @@
+# Local settings for docker-compose.dev.yml.
+# Copy to Config.toml; Config.toml is git-ignored.
+
+servicePort = 8084
+
+dbHost = "localhost"
+dbPort = 3309
+dbUser = "root"
+dbPassword = "root"
+dbName = "payment_db"
+
+kafkaBootstrap = "localhost:9092"
+consumerGroupId = "payment-service-group"
+orderCreatedTopic = "orders.created"
+paymentCompletedTopic = "payments.completed"
+paymentFailedTopic = "payments.failed"
+
+simulatePaymentFailure = false
