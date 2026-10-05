@@ -8,8 +8,6 @@ public enum OrderStatus {
     CANCELLED
 }
 
-// ---------- API records ----------
-// Stored/returned item: name and price are copied from the Restaurant Service menu at order time.
 public type OrderItem record {|
     int menuItemId;
     string name;
@@ -17,7 +15,6 @@ public type OrderItem record {|
     decimal unitPrice;
 |};
 
-// The client only sends WHICH items and HOW MANY; prices come from the menu, never from the client.
 public type CreateOrderItem record {|
     int menuItemId;
     int quantity;
@@ -41,7 +38,7 @@ public type OrderRecord record {|
     int deliveryAddressId;
     decimal totalAmount;
     string status;
-    string paymentStatus; // PENDING | PAID | FAILED
+    string paymentStatus;
     OrderItem[] items;
     string createdAt;
     string updatedAt;
@@ -54,7 +51,6 @@ public type StatusHistoryEntry record {|
     string changedAt;
 |};
 
-// ---------- DB row ----------
 type OrderRow record {|
     string order_id;
     int customer_id;
@@ -67,8 +63,6 @@ type OrderRow record {|
     string updated_at;
 |};
 
-// ---------- Kafka event contracts ----------
-// Produced. Each item carries menuItemId + quantity (Restaurant Service) and name + unitPrice (Customer Service).
 public type OrderCreatedEvent record {|
     string orderId;
     int customerId;
@@ -78,18 +72,15 @@ public type OrderCreatedEvent record {|
     OrderItem[] items;
 |};
 
-// Produced. Matches Customer Service's {orderId, status}.
 public type OrderStatusEvent record {|
     string orderId;
     string status;
 |};
 
-// Consumed. Open records: extra fields from other services are ignored.
 public type PaymentEvent record {
     string orderId;
 };
 
-// Person 2's RestaurantOrderEvent: status = CONFIRMED | REJECTED | PREPARING | READY
 public type RestaurantOrderEvent record {
     string orderId;
     string status;
@@ -98,7 +89,7 @@ public type RestaurantOrderEvent record {
 
 public type DeliveryEvent record {
     string orderId;
-    string status; // OUT_FOR_DELIVERY | DELIVERED
+    string status; 
 };
 
 // ---------- domain errors ----------

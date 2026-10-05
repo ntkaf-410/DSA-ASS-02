@@ -1,8 +1,3 @@
-#!/usr/bin/env bash
-# Fakes Restaurant (P2) / Payment (P4) / Delivery (P5) events so the Order Service can be tested alone.
-# usage: ./simulate-events.sh <orderId> <action>
-#   restaurant-confirm | restaurant-reject | preparing | ready |
-#   payment-ok | payment-fail | out-for-delivery | delivered
 set -e
 KAFKA_CONTAINER=${KAFKA_CONTAINER:-order-kafka}
 ORDER_ID=$1; WHAT=$2

@@ -3,7 +3,6 @@ import ballerina/http;
 final http:Client customerClient = check new (customerServiceUrl, timeout = 5);
 final http:Client restaurantClient = check new (restaurantServiceUrl, timeout = 5);
 
-// Tolerant (open) views of Person 2's RestaurantStatus and MenuItem: extra fields are ignored.
 type RestaurantStatusView record {
     boolean isActive;
     boolean isOpen;
@@ -17,7 +16,6 @@ type MenuItemView record {
     boolean isAvailable;
 };
 
-// Person 1 contract: 200 = valid, 404 = invalid customer or address.
 public function addressExists(int customerId, int addressId) returns boolean|error {
     http:Response r = check customerClient->get(string `/customers/${customerId}/addresses/${addressId}`);
     if r.statusCode == 200 {
@@ -29,8 +27,6 @@ public function addressExists(int customerId, int addressId) returns boolean|err
     return error(string `customer-service returned ${r.statusCode}`);
 }
 
-// ASSUMPTION: GET /restaurants/{id}/status returns Person 2's RestaurantStatus. Adjust path if different.
-// Returns "OK", "NOT_FOUND" or "NOT_ACCEPTING".
 public function checkRestaurant(int restaurantId) returns string|error {
     http:Response r = check restaurantClient->get(string `/restaurants/${restaurantId}/status`);
     if r.statusCode == 404 {
@@ -43,7 +39,6 @@ public function checkRestaurant(int restaurantId) returns string|error {
     return st.isActive && st.isOpen && st.acceptingOrders ? "OK" : "NOT_ACCEPTING";
 }
 
-// ASSUMPTION: GET /restaurants/{id}/menu returns a JSON array of MenuItem. Adjust path if different.
 public function fetchMenu(int restaurantId) returns MenuItemView[]|error {
     http:Response r = check restaurantClient->get(string `/restaurants/${restaurantId}/menu`);
     if r.statusCode != 200 {

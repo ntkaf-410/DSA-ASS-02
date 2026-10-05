@@ -1,6 +1,5 @@
 import ballerina/sql;
 
-// ALL SQL lives here (parameterised). Handlers never touch SQL.
 
 function rowToOrder(OrderRow r, OrderItem[] items) returns OrderRecord => {
     orderId: r.order_id,
@@ -83,8 +82,6 @@ public function listOrders(int? customerId, string? status, int page, int pageSi
     return result;
 }
 
-// Optimistic concurrency: only updates if the status is still what we read.
-// Returns false when someone else changed it first.
 public function updateStatus(string orderId, string current, string next, string actor)
         returns boolean|error {
     boolean changed = false;

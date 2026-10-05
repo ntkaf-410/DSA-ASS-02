@@ -6,7 +6,6 @@ final mysql:Client db = check new (
     host = dbHost, port = dbPort, user = dbUser, password = dbPassword, database = dbName
 );
 
-// Runs automatically at start-up; idempotent.
 function init() returns error? {
     _ = check db->execute(`
         CREATE TABLE IF NOT EXISTS orders (

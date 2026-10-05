@@ -1,5 +1,3 @@
-# Stand-alone dev infra for the Order Service. Person 6 owns the real, combined compose file.
-# Run the service itself locally with `bal run` (Kafka is advertised on localhost:9092).
 services:
   mysql:
     image: mysql:8

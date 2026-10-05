@@ -46,7 +46,6 @@ function validateCreate(CreateOrderRequest req) returns string? {
 
 service /orders on httpListener {
 
-    // Create an order: validate -> price from the live menu -> persist (CREATED) -> publish orders.created
     resource function post .(@http:Payload CreateOrderRequest req) returns http:Response {
         string? problem = validateCreate(req);
         if problem is string {
@@ -84,7 +83,6 @@ service /orders on httpListener {
             byId[m.id.toString()] = m;
         }
 
-        // Prices and names come from the menu, never from the client.
         OrderItem[] items = [];
         decimal total = 0d;
         foreach CreateOrderItem ci in req.items {

@@ -14,8 +14,6 @@ function publish(string topic, string key, json payload) returns error? {
     });
 }
 
-// Keyed by orderId => all events for one order land on one partition => ordered.
-// A Kafka outage is logged, never fails the HTTP request (same policy as Customer Service).
 public function publishOrderCreated(OrderRecord o) {
     OrderCreatedEvent ev = {
         orderId: o.orderId,

@@ -1,4 +1,3 @@
-// Single entry point for every status change, whether it came from REST or Kafka.
 public function applyTransition(string orderId, string next, string actor) returns OrderRecord|error {
     OrderRecord? existing = check getOrder(orderId);
     if existing is () {

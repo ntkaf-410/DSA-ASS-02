@@ -1,8 +1,3 @@
-// The order lifecycle. Any move not listed here is rejected.
-//
-//  CREATED -> CONFIRMED -> PREPARING -> READY -> OUT_FOR_DELIVERY -> DELIVERED
-//     |           |
-//     +-----------+--> CANCELLED
 final map<string[]> TRANSITIONS = {
     "CREATED": [CONFIRMED, CANCELLED],
     "CONFIRMED": [PREPARING, CANCELLED],

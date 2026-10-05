@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-# Creates every topic the Order Service touches (3 partitions each).
 set -e
 KAFKA_CONTAINER=${KAFKA_CONTAINER:-order-kafka}
 for t in orders.created orders.status.changed payments.completed payments.failed \

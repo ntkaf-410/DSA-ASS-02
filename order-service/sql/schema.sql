@@ -1,4 +1,3 @@
--- Same DDL that db.bal runs at start-up (kept here for documentation / manual setup)
 CREATE TABLE IF NOT EXISTS orders (
     order_id            VARCHAR(36)   PRIMARY KEY,
     customer_id         INT           NOT NULL,

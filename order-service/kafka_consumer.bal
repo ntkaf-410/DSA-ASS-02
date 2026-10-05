@@ -9,7 +9,6 @@ listener kafka:Listener orderListener = new (kafkaBootstrap, {
 service kafka:Service on orderListener {
     remote function onConsumerRecord(kafka:BytesConsumerRecord[] records) {
         foreach kafka:BytesConsumerRecord rec in records {
-            // each record has its own error scope: one poison message cannot block the partition
             error? r = handleRecord(rec);
             if r is error {
                 log:printError("failed to process record", r);
@@ -18,7 +17,6 @@ service kafka:Service on orderListener {
     }
 }
 
-// Restaurant Service vocabulary -> our order statuses. A rejection cancels the order.
 function restaurantToOrderStatus(string s) returns string? {
     match s {
         "CONFIRMED" => {
@@ -70,7 +68,6 @@ function handleRecord(kafka:BytesConsumerRecord rec) returns error? {
     }
 }
 
-// Kafka is at-least-once: a duplicate/late event must be a harmless no-op.
 function applyIdempotent(string orderId, string next, string actor) returns error? {
     OrderRecord|error r = applyTransition(orderId, next, actor);
     if r is InvalidTransition {
@@ -78,7 +75,7 @@ function applyIdempotent(string orderId, string next, string actor) returns erro
         return;
     }
     if r is error {
-        return r; // not found / DB error -> logged by caller
+        return r; 
     }
     log:printInfo("order updated from event", orderId = orderId, status = next, actor = actor);
 }
