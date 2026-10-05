@@ -103,6 +103,24 @@ service /drivers on httpListener {
         return updated;
     }
 
+    // GPS ping from the driver app, sent every few seconds while on shift
+    resource function put [int id]/location(@http:Payload LocationUpdate payload)
+            returns Driver|http:BadRequest|http:NotFound|http:InternalServerError {
+        string? invalid = validateLocation(payload);
+        if invalid is string {
+            return badRequest(invalid);
+        }
+        Driver|error updated = recordDriverLocation(id, payload);
+        if updated is sql:NoRowsError {
+            return notFound(string `Driver ${id} not found`);
+        }
+        if updated is error {
+            log:printError("Location update failed", updated, driverId = id);
+            return internalError();
+        }
+        return updated;
+    }
+
     // The driver's own jobs, newest first. ?status=ASSIGNED gives the driver app its current pickup.
     resource function get [int id]/deliveries(string? status, int page = 1, int pageSize = 20)
             returns Delivery[]|http:BadRequest|http:NotFound|http:InternalServerError {
