@@ -157,9 +157,92 @@ function assignDriverTx(string orderId, int driverId) returns boolean|error {
     return done;
 }
 
+// ASSIGNED -> OUT_FOR_DELIVERY: the driver has collected the food.
+// false = the delivery wasn't in ASSIGNED any more (double tap in the app, or cancelled meanwhile).
+function markPickedUp(string orderId) returns boolean|error {
+    boolean done = false;
+    transaction {
+        sql:ExecutionResult res = check dbClient->execute(`
+            UPDATE deliveries SET status = 'OUT_FOR_DELIVERY', picked_up_at = CURRENT_TIMESTAMP
+            WHERE order_id = ${orderId} AND status = 'ASSIGNED'`);
+        if res.affectedRowCount == 1 {
+            _ = check dbClient->execute(`
+                INSERT INTO delivery_events (order_id, status, note)
+                VALUES (${orderId}, 'OUT_FOR_DELIVERY', 'Driver picked up the order')`);
+            check commit;
+            done = true;
+        } else {
+            rollback;
+        }
+    } on fail error e {
+        return e;
+    }
+    return done;
+}
+
+// OUT_FOR_DELIVERY -> DELIVERED. The driver goes back into the pool in the same transaction,
+// otherwise a crash in between would leave them BUSY forever with nothing to deliver.
+function markDelivered(string orderId) returns boolean|error {
+    boolean done = false;
+    transaction {
+        sql:ExecutionResult res = check dbClient->execute(`
+            UPDATE deliveries SET status = 'DELIVERED', delivered_at = CURRENT_TIMESTAMP
+            WHERE order_id = ${orderId} AND status = 'OUT_FOR_DELIVERY'`);
+        if res.affectedRowCount == 1 {
+            _ = check dbClient->execute(`
+                UPDATE drivers d JOIN deliveries x ON x.driver_id = d.id
+                SET d.status = 'AVAILABLE'
+                WHERE x.order_id = ${orderId} AND d.status = 'BUSY'`);
+            _ = check dbClient->execute(`
+                INSERT INTO delivery_events (order_id, status, note)
+                VALUES (${orderId}, 'DELIVERED', 'Order handed to the customer')`);
+            check commit;
+            done = true;
+        } else {
+            rollback;
+        }
+    } on fail error e {
+        return e;
+    }
+    return done;
+}
+
+// driver location
+
+// Only the latest position is kept, that's all the tracking screen needs
+function saveDriverLocation(int driverId, LocationUpdate loc) returns error? {
+    _ = check dbClient->execute(`
+        UPDATE drivers
+        SET latitude = ${loc.latitude}, longitude = ${loc.longitude}, location_updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${driverId}`);
+}
+
+// The job a driver is on right now, or () when they are just driving around
+function activeOrderForDriver(int driverId) returns string?|error {
+    OrderIdRow|sql:Error row = dbClient->queryRow(`
+        SELECT order_id AS orderId FROM deliveries
+        WHERE driver_id = ${driverId} AND status IN ('ASSIGNED', 'OUT_FOR_DELIVERY')
+        ORDER BY assigned_at DESC LIMIT 1`);
+    if row is sql:NoRowsError {
+        return ();
+    }
+    if row is sql:Error {
+        return row;
+    }
+    return row.orderId;
+}
+
 // tracking timeline
 
 function insertEvent(string orderId, string status, string? note) returns error? {
     _ = check dbClient->execute(`
         INSERT INTO delivery_events (order_id, status, note) VALUES (${orderId}, ${status}, ${note})`);
+}
+
+function listEvents(string orderId) returns TrackingEvent[]|error {
+    stream<TrackingEvent, sql:Error?> rs = dbClient->query(`
+        SELECT status, note, DATE_FORMAT(created_at, '%Y-%m-%dT%H:%i:%sZ') AS occurredAt
+        FROM delivery_events WHERE order_id = ${orderId} ORDER BY id`);
+    return from TrackingEvent e in rs
+        select e;
 }

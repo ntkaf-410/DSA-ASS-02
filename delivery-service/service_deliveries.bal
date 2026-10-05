@@ -121,4 +121,40 @@ service /deliveries on httpListener {
         }
         return updated;
     }
+
+    // Driver app: OUT_FOR_DELIVERY when the food is collected, DELIVERED at the door.
+    // Everything before that is set by the service itself, not through this endpoint.
+    resource function put [string orderId]/status(@http:Payload DeliveryStatusUpdate payload)
+            returns Delivery|http:BadRequest|http:NotFound|http:Conflict|http:InternalServerError {
+        string next = payload.status.trim().toUpperAscii();
+        if next != OUT_FOR_DELIVERY && next != DELIVERED {
+            return badRequest("status must be OUT_FOR_DELIVERY or DELIVERED");
+        }
+        Delivery|error updated = updateDeliveryStatus(orderId, next);
+        if updated is sql:NoRowsError {
+            return notFound(string `No delivery for order ${orderId}`);
+        }
+        if updated is InvalidTransition {
+            return conflictResponse(updated.message());
+        }
+        if updated is error {
+            log:printError("Delivery status update failed", updated, orderId = orderId, status = next);
+            return internalError();
+        }
+        return updated;
+    }
+
+    // Customer app polls this: current status, who the driver is, where they are, and the timeline so far
+    resource function get [string orderId]/tracking()
+            returns TrackingView|http:NotFound|http:InternalServerError {
+        TrackingView|error view = buildTracking(orderId);
+        if view is sql:NoRowsError {
+            return notFound(string `No delivery for order ${orderId}`);
+        }
+        if view is error {
+            log:printError("Tracking lookup failed", view, orderId = orderId);
+            return internalError();
+        }
+        return view;
+    }
 }
