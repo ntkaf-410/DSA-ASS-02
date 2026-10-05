@@ -1,0 +1,6 @@
+target/
+Config.toml
+.env
+*.log
+.idea/
+.vscode/
