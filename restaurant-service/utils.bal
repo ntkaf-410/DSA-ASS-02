@@ -159,7 +159,7 @@ function isOpenNow(OpeningHours[] hours) returns boolean {
     if hours.length() == 0 {
         return true;
     }
-    [int dow, int minute] = localDayAndMinute();
+    var [dow, minute] = localDayAndMinute();
     return isOpenAt(hours, dow, minute);
 }
 
@@ -203,7 +203,7 @@ function parseOrderCreated(json payload) returns OrderRequest|error {
     }
 
     map<int> totals = {};
-    int[] order = [];
+    int[] itemOrder = [];
     foreach json entry in itemsJson {
         json idJson = check entry.menuItemId;
         json qtyJson = check entry.quantity;
@@ -215,13 +215,13 @@ function parseOrderCreated(json payload) returns OrderRequest|error {
         string key = itemId.toString();
         int? soFar = totals[key];
         if soFar is () {
-            order.push(itemId);
+            itemOrder.push(itemId);
             totals[key] = qty;
         } else {
             totals[key] = soFar + qty;
         }
     }
-    OrderLine[] lines = from int i in order
+    OrderLine[] lines = from int i in itemOrder
         select {menuItemId: i, quantity: totals.get(i.toString())};
     return {orderId, customerId, restaurantId, lines};
 }
