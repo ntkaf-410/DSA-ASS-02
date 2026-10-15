@@ -6,8 +6,17 @@ const ports = {
 };
 
 const $ = (selector) => document.querySelector(selector);
-const apiHost = () => ($("#api-host").value || "http://localhost").replace(/\/$/, "");
-const endpoint = (service, path) => `${apiHost()}:${ports[service]}${path}`;
+const apiHost = () => ($("#api-host").value || "http://localhost").trim().replace(/\/$/, "");
+function endpoint(service, path) {
+  let host = apiHost();
+  if (!/^https?:\/\//i.test(host)) host = `http://${host}`;
+  const url = new URL(host);
+  url.port = String(ports[service]);
+  url.pathname = path;
+  url.search = "";
+  url.hash = "";
+  return url.toString();
+}
 
 function notify(message, error = false) {
   const notice = $("#notice");
