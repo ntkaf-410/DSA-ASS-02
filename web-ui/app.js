@@ -25,10 +25,9 @@ function notify(message, error = false) {
 }
 
 async function request(service, path, options = {}) {
-  const response = await fetch(endpoint(service, path), {
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
-    ...options
-  });
+  const headers = { ...(options.headers || {}) };
+  if (options.body && !headers["Content-Type"]) headers["Content-Type"] = "application/json";
+  const response = await fetch(endpoint(service, path), { ...options, headers });
   const text = await response.text();
   let body = {};
   try { body = text ? JSON.parse(text) : {}; } catch (_) { body = { message: text }; }
