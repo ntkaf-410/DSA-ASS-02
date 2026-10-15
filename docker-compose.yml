@@ -165,6 +165,17 @@ services:
     ports: ["8087:8087"]
     restart: on-failure
 
+  # Static dashboard for demonstrating the platform APIs.
+  web-ui:
+    build: ./web-ui
+    depends_on:
+      - customer-service
+      - restaurant-service
+      - order-service
+      - admin-service
+    ports: ["8080:80"]
+    restart: on-failure
+
   # ---------- optional tooling ----------
   # Browse topics and messages while demoing. Only starts with `--profile tools`.
   kafka-ui:

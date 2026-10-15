@@ -1,5 +1,16 @@
 # Customer Service — DSA612S Assignment 2 (Person 1)
 
+## Web UI
+
+The repository includes a simple static dashboard in `web-ui/`. Start the platform from the repository root:
+
+```powershell
+docker compose up -d --build
+```
+
+Then open [http://localhost:8080](http://localhost:8080). The dashboard provides customer registration and addresses,
+restaurant/menu browsing, order creation and history, service health, and admin summary reports.
+
 **Owner:** Person 1 · **Language:** Ballerina (Swan Lake) · **DB:** MySQL 8 · **Messaging:** Kafka · **Port:** `8081`
 
 Responsibility (from the team split): *user accounts, delivery addresses, order history, database, REST APIs.*

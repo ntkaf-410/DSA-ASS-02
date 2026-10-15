@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Food Delivery Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">DSA612S · Assignment 2</p>
+      <h1>Food Delivery Dashboard</h1>
+    </div>
+    <div class="api-config">
+      <label for="api-host">API host</label>
+      <input id="api-host" value="http://localhost" aria-label="API host">
+      <button id="save-api" class="button secondary">Save</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <button class="nav-item active" data-view="overview">Overview</button>
+      <button class="nav-item" data-view="customers">Customers</button>
+      <button class="nav-item" data-view="restaurants">Restaurants</button>
+      <button class="nav-item" data-view="orders">Orders</button>
+      <button class="nav-item" data-view="admin">Admin</button>
+      <div class="sidebar-note">
+        <strong>Quick start</strong>
+        <p>Start the platform with <code>docker compose up -d --build</code>, then refresh this page.</p>
+      </div>
+    </aside>
+
+    <section class="content">
+      <div id="notice" class="notice" role="status" aria-live="polite"></div>
+
+      <section id="overview" class="view active">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">Platform overview</p>
+            <h2>Everything in one place</h2>
+          </div>
+          <button id="refresh-health" class="button">Refresh status</button>
+        </div>
+        <div id="health-grid" class="card-grid"></div>
+        <div class="panel">
+          <h3>How to use the demo</h3>
+          <ol class="steps">
+            <li>Register or log in under <strong>Customers</strong>.</li>
+            <li>Add a delivery address.</li>
+            <li>Browse restaurants and menu items.</li>
+            <li>Create an order using the selected customer and address.</li>
+            <li>Review the order and platform reports.</li>
+          </ol>
+        </div>
+      </section>
+
+      <section id="customers" class="view">
+        <div class="page-heading">
+          <div><p class="eyebrow">Customer service</p><h2>Customers & addresses</h2></div>
+        </div>
+        <div class="two-column">
+          <form id="register-form" class="panel">
+            <h3>Register customer</h3>
+            <label>Full name<input name="fullName" required></label>
+            <label>Email<input name="email" type="email" required></label>
+            <label>Phone<input name="phone" required></label>
+            <label>Password<input name="password" type="password" minlength="8" required></label>
+            <button class="button" type="submit">Register</button>
+          </form>
+          <form id="login-form" class="panel">
+            <h3>Login</h3>
+            <label>Email<input name="email" type="email" required></label>
+            <label>Password<input name="password" type="password" required></label>
+            <button class="button" type="submit">Login</button>
+            <p id="current-customer" class="muted">No customer selected.</p>
+          </form>
+        </div>
+        <div class="two-column">
+          <form id="address-form" class="panel">
+            <h3>Add delivery address</h3>
+            <label>Customer ID<input name="customerId" type="number" min="1" required></label>
+            <label>Label<input name="label" placeholder="Home" required></label>
+            <label>Street<input name="street" required></label>
+            <label>City<input name="city" required></label>
+            <label>Region<input name="region" required></label>
+            <button class="button" type="submit">Add address</button>
+          </form>
+          <div class="panel">
+            <div class="panel-heading"><h3>Customer addresses</h3><button id="load-addresses" class="button secondary">Load</button></div>
+            <label>Customer ID<input id="address-customer-id" type="number" min="1" placeholder="1"></label>
+            <div id="addresses" class="results muted">Enter a customer ID to load addresses.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="restaurants" class="view">
+        <div class="page-heading">
+          <div><p class="eyebrow">Restaurant service</p><h2>Restaurants & menus</h2></div>
+          <button id="load-restaurants" class="button">Load restaurants</button>
+        </div>
+        <div id="restaurant-list" class="card-grid"></div>
+        <div class="panel">
+          <div class="panel-heading"><h3>Menu</h3><button id="load-menu" class="button secondary">Load menu</button></div>
+          <label>Restaurant ID<input id="menu-restaurant-id" type="number" min="1" placeholder="1"></label>
+          <div id="menu-list" class="results muted">Select a restaurant to view its menu.</div>
+        </div>
+      </section>
+
+      <section id="orders" class="view">
+        <div class="page-heading">
+          <div><p class="eyebrow">Order service</p><h2>Create & track orders</h2></div>
+        </div>
+        <form id="order-form" class="panel">
+          <h3>Create order</h3>
+          <div class="form-grid">
+            <label>Customer ID<input name="customerId" type="number" min="1" required></label>
+            <label>Restaurant ID<input name="restaurantId" type="number" min="1" required></label>
+            <label>Delivery address ID<input name="deliveryAddressId" type="number" min="1" required></label>
+            <label>Menu item ID<input name="menuItemId" type="number" min="1" required></label>
+            <label>Quantity<input name="quantity" type="number" min="1" value="1" required></label>
+          </div>
+          <button class="button" type="submit">Place order</button>
+        </form>
+        <div class="panel">
+          <div class="panel-heading"><h3>Customer order history</h3><button id="load-orders" class="button secondary">Load orders</button></div>
+          <label>Customer ID<input id="orders-customer-id" type="number" min="1" placeholder="1"></label>
+          <div id="order-list" class="results muted">Enter a customer ID to load orders.</div>
+        </div>
+      </section>
+
+      <section id="admin" class="view">
+        <div class="page-heading">
+          <div><p class="eyebrow">Admin service</p><h2>Reports & service status</h2></div>
+          <button id="load-admin" class="button">Refresh reports</button>
+        </div>
+        <div id="summary" class="card-grid"></div>
+        <div class="panel">
+          <h3>Services</h3>
+          <div id="service-list" class="results muted">Click refresh reports to load service status.</div>
+        </div>
+      </section>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
